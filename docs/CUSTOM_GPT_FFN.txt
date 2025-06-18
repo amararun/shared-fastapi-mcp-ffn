@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: Security Performance Review (SPR) API
+  description: |
+    A professional FastAPI-based portfolio analysis API that uses Security Performance Review (SPR) methodology combining custom calculations with FFN (Financial Functions) library metrics. This API provides comprehensive quantitative portfolio analytics with beautiful HTML reports, multiple CSV data exports, and MCP integration for AI agents.
+    
+    The API connects Yahoo Finance data with SPR custom calculations and FFN analytics to deliver in-depth performance analysis of multiple securities simultaneously. Analysis includes core performance metrics using custom calculations (Total Return, CAGR, Sharpe ratio, Sortino ratio), risk analysis via FFN (maximum drawdown, volatility), visual charts, monthly returns breakdown via FFN, and drawdown analysis.
+    
+    Generated reports include professional HTML reports with REX AI branding, interactive charts, and multiple CSV files for data analysis. Core metrics use custom implementations based on QuantStats methodology while additional analytics leverage the open-source FFN library.
+  version: 1.0.0
+servers:
+  - url: https://ffn.hosting.tigzig.com
+    description: Security Performance Review (SPR) API server
+paths:
+  /analyze:
+    post:
+      operationId: createPortfolioAnalysis
+      summary: Generate comprehensive SPR portfolio analysis report
+      description: Creates detailed SPR portfolio analysis with custom performance metrics (Total Return, CAGR, Sharpe, Sortino) and FFN analytics (drawdowns, monthly returns). Returns HTML report with charts plus CSV data files.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - symbols
+                - start_date
+                - end_date
+              properties:
+                symbols:
+                  type: string
+                  description: |
+                    Comma-separated Yahoo Finance ticker symbols for SPR portfolio analysis (e.g., 'AAPL,MSFT,GOOG').
+                    Supports multiple securities simultaneously using SPR methodology. Use standard market symbols like 'AAPL' for Apple, 'MSFT' for Microsoft.
+                    For indices, use '^' prefix (e.g., '^GSPC' for S&P 500). Can analyze individual stocks, ETFs, indices, and mixed portfolios.
+                  example: "AAPL,MSFT,GOOG"
+                start_date:
+                  type: string
+                  format: date
+                  description: |
+                    SPR analysis start date in YYYY-MM-DD format.
+                    Should provide sufficient history for meaningful SPR analysis (recommended minimum 1 year).
+                    Historical data availability depends on Yahoo Finance database, typically going back decades for major securities.
+                  example: "2023-01-01"
+                end_date:
+                  type: string
+                  format: date
+                  description: |
+                    SPR analysis end date in YYYY-MM-DD format.
+                    Must be after start_date. The SPR analysis includes this date in results.
+                    Can use current date for up-to-date analysis.
+                  example: "2023-12-31"
+                risk_free_rate:
+                  type: number
+                  description: |
+                    Annual risk-free rate as percentage (e.g., 5.0 for 5%).
+                    Used in SPR custom Sharpe ratio, Sortino ratio, and other risk-adjusted return calculations.
+                    Typically set to current Treasury bill rate or similar government security yield.
+                    Default value is 0.0 if not specified.
+                  example: 5.0
+                  default: 0.0
+      responses:
+        '200':
+          description: Successful generation of SPR portfolio analysis with multiple data outputs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  html_report_ffn_url:
+                    type: string
+                    description: URL to access the complete SPR HTML report with professional charts, custom performance metrics, and FFN analytics
+                    example: "/static/reports/report_AAPL-MSFT-GOOG_20241201_143022.html"
+                  input_price_data_csv_url:
+                    type: string
+                    description: URL to download raw daily price data CSV file for all securities used in SPR analysis
+                    example: "/static/reports/report_AAPL-MSFT-GOOG_20241201_143022_price_data.csv"
+                  cumulative_returns_csv_url:
+                    type: string
+                    description: URL to download cumulative returns CSV file showing SPR portfolio performance over time
+                    example: "/static/reports/report_AAPL-MSFT-GOOG_20241201_143022_cumulative_returns.csv"
+                  success:
+                    type: string
+                    description: Success message confirming SPR report generation completion
+                    example: "SPR (Security Performance Review) portfolio analysis report generated successfully!"
+        '400':
+          description: Invalid input parameters or data issues for SPR analysis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error message describing the validation or data issue in SPR analysis
+                    example: "Error fetching stock data: No data available for the provided symbols in the date range"
+        '500':
+          description: Server error during SPR analysis generation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error message describing what went wrong during SPR processing
+                    example: "Error generating SPR analysis: Internal server error"
