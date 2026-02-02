@@ -531,3 +531,8 @@ MIT License - see LICENSE file for details.
 - **[FFN Library](https://github.com/pmorissette/ffn)** - Core financial analysis engine
 - **[FastAPI](https://fastapi.tiangolo.com/)** - High-performance web framework  
 - **[yfinance](https://github.com/ranaroussi/yfinance)** - Yahoo Finance data integration 
+## Author
+
+Built by [Amar Harolikar](https://www.linkedin.com/in/amarharolikar/)
+
+Explore 30+ open source AI tools for analytics, databases & automation at [tigzig.com](https://tigzig.com)
