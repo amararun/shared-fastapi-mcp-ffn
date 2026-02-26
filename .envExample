@@ -1,0 +1,12 @@
+# Development mode (1=local, 0=production)
+IS_LOCAL_DEVELOPMENT=1
+
+# Base URL for generated report links (production only, ignored in local mode)
+BASE_URL_FOR_REPORTS=https://your-domain.com/
+
+# Rate limiting (default shown)
+RATE_LIMIT=30/minute
+
+# Concurrency limits (defaults shown)
+MAX_CONCURRENT_PER_IP=3
+MAX_CONCURRENT_GLOBAL=6

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="QPulse vs SPR Methodology Validation and Comparison Documentation">
+    <meta name="keywords" content="QPulse, Portfolio Analysis, Financial Metrics, CAGR, Sharpe Ratio">
+    <meta name="author" content="TIGZIG Analytics">
+    <title>QPulse vs SPR: Methodology Documentation</title>
+    <link rel="stylesheet" href="assets/docs.css">
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header Section (same as FFN reports) -->
+    <header style="
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        color: white;
+        padding: 6px 0;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 16px;
+    ">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600;">
+                <!-- TIGZIG Logo -->
+                <img src="/static/img/FXLOGO.png" alt="TIGZIG" style="height: 24px; width: auto;">
+                <!-- TIGZIG hyperlink -->
+                <a href="https://tigzig.com" target="_blank" rel="noopener noreferrer" style="color: #fbbf24; text-decoration: none; font-weight: 600;">
+                    TIGZIG
+                </a>
+                <span style="color: #ffffff; font-weight: 500;">- Documentation</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px 32px 24px;">
+        
+        <!-- Document Title Section -->
+        <div class="mb-6">
+            <h1 class="text-4xl font-bold text-blue-900 mb-2">QPulse Vs. SPR (Security Performance Report)</h1>
+            <h2 class="text-2xl font-medium text-blue-700 mb-3">Methodology Validation, Reconciliation & Comparisons</h2>
+                         <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px; line-height: 1.4; margin-top: 0;">
+                 For any questions, drop a note at 
+                 <a href="mailto:amar@harolikar.com" style="color: #1d4ed8; text-decoration: none; font-weight: 500;">amar@harolikar.com</a>
+             </p>
+        </div>
+        
+        <h2 id="executive-summary">📊 Executive Summary</h2>
+<p><strong>If you&rsquo;re a financial analyst wondering:</strong> <em>&ldquo;I ran SPR analysis and QPulse analysis on the same data but got slightly different results - which one should I trust and why the differences?&rdquo;</em></p>
+<p><strong>Bottom Line:</strong>
+- ✅ <strong>Both are reliable</strong> - SPR custom calculations achieve 97%+ accuracy vs QuantStats-Lumi
+- ✅ <strong>Perfect matches on core metrics</strong>: Total Return (100%), CAGR (100%) 
+- ✅ <strong>Minor differences expected</strong>: Sharpe/Sortino ratios differ by 2-4% due to data quality filtering approaches
+- 🎯 <strong>Choose based on needs</strong>: QuantStats-Lumi for 2 symbols + comprehensive built-in analytics, SPR for multiple symbols + interactive charts + future customizations</p>
+<p><strong>Why both exist:</strong>
+- <strong>QuantStats-Lumi</strong>: Tried and tested library with 15+ charts and 50+ metrics, maintained by Lumiwealth (algorithmic trading education company)
+- <strong>SPR</strong>: Custom implementation enabling multiple symbols, interactive Plotly charts, CSV exports and future custom metrics</p>
+<p><strong>When to use which:</strong> <a href="#when-to-use-spr-vs-qpulse">See detailed comparison below</a></p>
+<hr />
+<h2 id="quick-navigation">📑 Quick Navigation</h2>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#why-this-document-exists">🎯 Why This Document Exists</a></td>
+<td>Analyst&rsquo;s dilemma and key questions answered</td>
+</tr>
+<tr>
+<td><a href="#spr-vs-qpulse-system-overview">🏗️ System Overview</a></td>
+<td>Architecture comparison and why both exist</td>
+</tr>
+<tr>
+<td><a href="#data-preprocessing-complete-pipeline">📅 Data Preprocessing</a></td>
+<td>Complete data pipeline with multi-symbol handling</td>
+</tr>
+<tr>
+<td><a href="#core-metrics-methodology">💰 Core Metrics</a></td>
+<td>Total Return, CAGR, Sharpe, Sortino methodologies</td>
+</tr>
+<tr>
+<td><a href="#supporting-analytics-ffn-integration">📊 Supporting Analytics</a></td>
+<td>FFN integration and monthly returns</td>
+</tr>
+<tr>
+<td><a href="#csv-export-capabilities-spr-advantage">📁 CSV Export Capabilities</a></td>
+<td>Ready-to-use data files for Excel analysis</td>
+</tr>
+<tr>
+<td><a href="#practical-validation-walkthrough">🔍 Practical Validation</a></td>
+<td>Real test case with actual results</td>
+</tr>
+<tr>
+<td><a href="#when-to-use-spr-vs-qpulse">🎯 When to Use Which Tool</a></td>
+<td><strong>Decision guide and workflows</strong></td>
+</tr>
+<tr>
+<td><a href="#technical-implementation-summary">📚 Technical Summary</a></td>
+<td>Validation status and processing comparison</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="why-this-document-exists">🎯 Why This Document Exists</h2>
+<h3 id="the-analysts-dilemma">The Analyst&rsquo;s Dilemma</h3>
+<p>You&rsquo;re analyzing portfolio performance and have two tools:
+1. <strong>QuantStats-Lumi</strong>: Maintained library with comprehensive analytics
+2. <strong>SPR</strong>: Custom implementation with additional capabilities</p>
+<p>When you run both on the same data, you notice:
+- Total returns match perfectly ✅
+- CAGR values are identical ✅ 
+- But Sharpe ratios are slightly different (e.g., 0.785 vs 0.81) ❓</p>
+<h3 id="this-document-answers">This Document Answers:</h3>
+<ul>
+<li><strong>What methodology does SPR use?</strong> (Custom QuantStats-compatible calculations)</li>
+<li><strong>Why are there small differences?</strong> (Different data quality filtering approaches)</li>
+<li><strong>Which results should I trust?</strong> (Both - differences are within normal tolerance)</li>
+<li><strong>When should I use each tool?</strong> (Depends on your specific needs)</li>
+</ul>
+<hr />
+<h2 id="spr-vs-qpulse-system-overview">🏗️ SPR vs QPulse: System Overview</h2>
+<h3 id="qpulse-application-powered-by-quantstats-lumi">QPulse Application (powered by QuantStats-Lumi)</h3>
+<ul>
+<li><strong>Library</strong>: <a href="https://github.com/Lumiwealth/quantstats_lumi">quantstats-lumi</a> - maintained fork of original QuantStats by Ran Aroussi</li>
+<li><strong>Maintainer</strong>: Lumiwealth, a company specializing in algorithmic trading education and tools</li>
+<li><strong>Background</strong>: Created by team of data scientists and engineers to address issues in original unmaintained QuantStats</li>
+<li><strong>Approach</strong>: Direct library wrapper with minimal preprocessing</li>
+<li><strong>Limitations</strong>: Maximum 2 symbols in standard report (strategy vs benchmark)</li>
+<li><strong>Strengths</strong>: 15+ built-in charts, 50+ metrics, actively maintained codebase</li>
+<li><strong>Output</strong>: HTML reports with extensive visualizations</li>
+</ul>
+<h3 id="spr-application">SPR Application</h3>
+<ul>
+<li><strong>Core Metrics</strong>: Custom QuantStats-compatible implementations for validation</li>
+<li><strong>Supporting Analytics</strong>: FFN library for drawdowns, monthly returns, summary statistics</li>
+<li><strong>Capabilities</strong>: Multiple symbols support, interactive Plotly charts, future rolling metrics</li>
+<li><strong>Strengths</strong>: Flexibility for custom calculations, automatic validation via dual methodology</li>
+<li><strong>Output</strong>: Focused reports with interactive visualizations and CSV exports</li>
+</ul>
+<h3 id="why-both-exist">Why Both Exist</h3>
+<ul>
+<li><strong>Automatic Validation</strong>: Running both provides immediate cross-verification</li>
+<li><strong>Different Use Cases</strong>: QPulse for comprehensive single-comparison analysis, SPR for multi-symbol portfolio analysis</li>
+<li><strong>Future-Proofing</strong>: SPR allows custom metric implementations without modifying QuantStats-Lumi code</li>
+<li><strong>Risk Management</strong>: If either tool changes, the other provides continuity</li>
+<li><strong>CSV Downloads</strong>: SPR provides CSV download of prices and returns for offline analysis</li>
+</ul>
+<hr />
+<h2 id="data-preprocessing-complete-pipeline">📅 Data Preprocessing: Complete Pipeline</h2>
+<h3 id="1-data-acquisition-yahoo-finance">1. Data Acquisition (Yahoo Finance)</h3>
+<p>Both applications use identical data sources but different processing:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Common approach - yfinance library</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">tickers</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">symbols</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_date</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="2-multi-symbol-data-quality-pipeline-spr-specific">2. Multi-Symbol Data Quality Pipeline (SPR Specific)</h3>
+<h4 id="step-1-individual-symbol-cleaning">Step 1: Individual Symbol Cleaning</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># For each symbol individually:</span>
+<span class="n">prices</span> <span class="o">=</span> <span class="n">prices</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>  <span class="c1"># Remove NaN values</span>
+<span class="n">prices</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">prices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># Remove zero/negative prices  </span>
+<span class="n">prices</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="o">~</span><span class="n">prices</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)]</span>  <span class="c1"># Remove duplicates</span>
+</code></pre></div>
+
+<p><strong>Financial Purpose</strong>: Ensures each symbol has clean, investable price data before portfolio analysis.</p>
+<h4 id="step-2-multi-symbol-date-alignment">Step 2: Multi-Symbol Date Alignment</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Merge symbols with outer join to preserve all dates</span>
+<span class="n">all_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">all_data</span><span class="p">,</span> <span class="n">symbol_df</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Result</strong>: Combined dataset may have NaN values where symbols have different trading histories.</p>
+<h4 id="step-3-missing-data-handling">Step 3: Missing Data Handling</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Conservative gap-filling approach</span>
+<span class="n">all_data</span> <span class="o">=</span> <span class="n">all_data</span><span class="o">.</span><span class="n">ffill</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Forward fill up to 5 days maximum</span>
+<span class="n">all_data</span> <span class="o">=</span> <span class="n">all_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>       <span class="c1"># Drop remaining NaN values</span>
+</code></pre></div>
+
+<p><strong>Financial Impact</strong>: 
+- <strong>Forward fill (5-day limit)</strong>: Handles short market closures (holidays, technical issues)
+- <strong>Drop remaining NaN</strong>: Ensures analysis period covers only dates where all symbols have data
+- <strong>Conservative approach</strong>: Prevents artificial data creation for extended missing periods</p>
+<h3 id="3-return-calculation-with-date-matching">3. Return Calculation with Date Matching</h3>
+<h4 id="standard-return-calculation">Standard Return Calculation</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Both applications: Convert prices to returns (loses first day)</span>
+<span class="n">returns</span> <span class="o">=</span> <span class="n">price_data</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</code></pre></div>
+
+<h4 id="quantstats-date-matching-logic">QuantStats Date Matching Logic</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># QuantStats _match_dates function</span>
+<span class="k">def</span> <span class="nf">_match_dates</span><span class="p">(</span><span class="n">returns</span><span class="p">):</span>
+    <span class="n">loc</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">ne</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()</span>  <span class="c1"># Find first non-zero return for each symbol</span>
+    <span class="k">return</span> <span class="n">returns</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">loc</span><span class="p">:]</span>      <span class="c1"># Start analysis from first meaningful return</span>
+</code></pre></div>
+
+<p><strong>Explanation</strong>: This step identifies when each investment actually started generating returns (non-zero), ensuring performance metrics reflect actual investable periods rather than &ldquo;dead&rdquo; periods.</p>
+<h4 id="spr-implementation-multi-symbol">SPR Implementation (Multi-Symbol)</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Apply QuantStats logic across multiple symbols</span>
+<span class="n">first_nonzero_indices</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">returns_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="n">first_nonzero_idx</span> <span class="o">=</span> <span class="n">returns_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">ne</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">returns_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">ne</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">first_nonzero_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">first_nonzero_idx</span><span class="p">)</span>
+
+<span class="c1"># Use the LATEST first non-zero date among all symbols        </span>
+<span class="n">start_date</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">first_nonzero_indices</span><span class="p">)</span>
+<span class="n">returns_data</span> <span class="o">=</span> <span class="n">returns_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">start_date</span><span class="p">:]</span>
+</code></pre></div>
+
+<p><strong>Multi-Symbol Financial Logic</strong>: When analyzing multiple symbols, SPR waits until ALL symbols have meaningful returns before starting the analysis period. This ensures fair comparison across all portfolio components.</p>
+<h3 id="4-data-quality-validation-results">4. Data Quality Validation Results</h3>
+<p><strong>Typical Processing Example</strong> (^GSPC &amp; ^NSEI):
+- <strong>Downloaded</strong>: 2,580 daily observations
+- <strong>After pct_change()</strong>: 2,579 observations (lost first day)
+- <strong>After date matching</strong>: 2,578 observations (lost one zero-return day)
+- <strong>Final analysis period</strong>: June 9, 2015 to May 30, 2025</p>
+<p><strong>Date Loss Patterns</strong>:
+- <strong>1-day loss</strong>: Normal (pct_change() always loses first day)
+- <strong>2+ day loss</strong>: Zero-return filtering + multi-symbol alignment</p>
+<hr />
+<h2 id="core-metrics-methodology">💰 Core Metrics Methodology</h2>
+<h3 id="total-return-calculation">Total Return Calculation</h3>
+<p><strong>Mathematical Formula:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="nv">Total</span><span class="w"> </span><span class="k">Return</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">r</span>₁<span class="ss">)</span><span class="w"> </span>×<span class="w"> </span><span class="ss">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">r</span>₂<span class="ss">)</span><span class="w"> </span>×<span class="w"> </span>...<span class="w"> </span>×<span class="w"> </span><span class="ss">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">r</span>ₙ<span class="ss">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>QuantStats Implementation:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">comp</span><span class="p">(</span><span class="n">returns</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">returns</span><span class="p">)</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Compound all daily returns</span>
+</code></pre></div>
+
+<p><strong>Explanation</strong>: This calculates the cumulative effect of daily returns over the entire period. A 10% gain followed by a 5% loss results in: (1.10 × 0.95) - 1 = 4.5% total return.</p>
+<p><strong>SPR Implementation (QuantStats-Compatible):</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">compute_total_return</span><span class="p">(</span><span class="n">returns</span><span class="p">):</span>
+    <span class="n">returns_processed</span> <span class="o">=</span> <span class="n">_prepare_returns_quantstats_style</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">returns_processed</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>Validation Result</strong>: ✅ <strong>100% Perfect Match</strong></p>
+<h3 id="cagr-compound-annual-growth-rate">CAGR (Compound Annual Growth Rate)</h3>
+<p><strong>Mathematical Formula:</strong></p>
+<div class="codehilite"><pre><span></span><code>CAGR = (1 + Total_Return)^(1/years) - 1
+where years = (end_date - start_date) / 365.25
+</code></pre></div>
+
+<p><strong>QuantStats Implementation:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">cagr</span><span class="p">(</span><span class="n">returns</span><span class="p">):</span>
+    <span class="n">years</span> <span class="o">=</span> <span class="p">(</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">days</span> <span class="o">/</span> <span class="mf">365.25</span>
+    <span class="n">total_ret</span> <span class="o">=</span> <span class="n">comp</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">total_ret</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">years</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>Explanation</strong>: CAGR answers &ldquo;What constant annual return would produce the same final result?&rdquo; It uses 365.25 days per year to account for leap years and provides fractional year precision.</p>
+<p><strong>SPR Implementation:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">compute_cagr</span><span class="p">(</span><span class="n">returns</span><span class="p">):</span>
+    <span class="n">delta_seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+    <span class="n">years</span> <span class="o">=</span> <span class="n">delta_seconds</span> <span class="o">/</span> <span class="p">(</span><span class="mf">365.25</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># More precise than days</span>
+    <span class="n">total_return_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">returns</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">total_return_factor</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">years</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p><strong>Validation Result</strong>: ✅ <strong>100% Perfect Match</strong></p>
+<h3 id="sharpe-ratio-calculation">Sharpe Ratio Calculation</h3>
+<p><strong>Mathematical Formula:</strong></p>
+<div class="codehilite"><pre><span></span><code>Sharpe Ratio = (Mean_Excess_Return / Std_Dev_Excess_Returns) × √365
+
+Where:
+<span class="k">-</span> Excess_Return = Daily_Return - Daily_Risk_Free_Rate
+<span class="k">-</span> Daily_RF_Rate = (1 + Annual_RF_Rate)^(1/365) - 1
+</code></pre></div>
+
+<p><strong>QuantStats Implementation:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">sharpe</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">):</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">_prepare_returns</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">periods</span><span class="p">)</span>  <span class="c1"># Subtract RF rate</span>
+    <span class="k">return</span> <span class="n">returns</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">returns</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Explanation</strong>: Sharpe ratio measures risk-adjusted returns. It asks &ldquo;How much extra return do I get per unit of risk?&rdquo; The √365 factor annualizes the daily ratio. Higher values indicate better risk-adjusted performance.</p>
+<p><strong>Risk-Free Rate Processing (Both Applications):</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Convert annual rate to daily (compound, not simple division)</span>
+<span class="n">daily_rf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">annual_rf</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mi">365</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span>
+<span class="n">excess_returns</span> <span class="o">=</span> <span class="n">daily_returns</span> <span class="o">-</span> <span class="n">daily_rf</span>
+</code></pre></div>
+
+<p><strong>Explanation</strong>: Risk-free rate conversion uses compound mathematics. A 5% annual rate becomes approximately 0.0134% daily, not simply 5%/365 = 0.0137%.</p>
+<p><strong>Validation Results</strong>: <strong>96.9-97.4% Accuracy</strong></p>
+<p><strong>Why 3% Differences Exist:</strong>
+1. <strong>Time in Market Calculation</strong>: SPR 97.2% vs QuantStats 98% (different filtering approaches)
+2. <strong>Data Quality Thresholds</strong>: Different precision levels for &ldquo;zero return&rdquo; detection
+3. <strong>Multi-Symbol vs Pair Analysis</strong>: Portfolio-level vs symbol-level processing differences</p>
+<h3 id="sortino-ratio-calculation">Sortino Ratio Calculation</h3>
+<p><strong>Mathematical Formula:</strong></p>
+<div class="codehilite"><pre><span></span><code>Sortino Ratio = (Mean_Excess_Return / Downside_Deviation) × √365
+
+Downside_Deviation = √(Σ(negative_returns²) / total_observations)
+</code></pre></div>
+
+<p><strong>Critical Implementation Detail</strong>: Uses total observations in denominator, not just negative returns.</p>
+<p><strong>QuantStats Implementation:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">sortino</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">):</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">_prepare_returns</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="n">periods</span><span class="p">)</span>
+    <span class="n">downside</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">returns</span><span class="p">[</span><span class="n">returns</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">returns</span><span class="p">))</span>  <span class="c1"># Note: len(returns)</span>
+    <span class="k">return</span> <span class="n">returns</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">downside</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Explanation</strong>: Sortino ratio is like Sharpe ratio but only penalizes downside volatility. It recognizes that upside volatility isn&rsquo;t &ldquo;bad risk.&rdquo; The denominator uses all observations to maintain statistical consistency.</p>
+<p><strong>Validation Results</strong>: <strong>96.4-97.3% Accuracy</strong></p>
+<hr />
+<h2 id="supporting-analytics-ffn-integration">📊 Supporting Analytics (FFN Integration)</h2>
+<h3 id="ffn-library-role">FFN Library Role</h3>
+<p>SPR uses FFN&rsquo;s <code>calc_stats()</code> function for comprehensive supporting analytics:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># FFN integration in SPR</span>
+<span class="n">ffn_data</span> <span class="o">=</span> <span class="n">data_processor</span><span class="o">.</span><span class="n">get_data_for_ffn</span><span class="p">()</span>  <span class="c1"># Raw price data</span>
+<span class="n">perf</span> <span class="o">=</span> <span class="n">ffn_data</span><span class="o">.</span><span class="n">calc_stats</span><span class="p">()</span>                  <span class="c1"># Comprehensive statistics</span>
+<span class="n">perf</span><span class="o">.</span><span class="n">set_riskfree_rate</span><span class="p">(</span><span class="n">rf_decimal</span><span class="p">)</span>           <span class="c1"># Risk-free rate integration</span>
+</code></pre></div>
+
+<h3 id="ffn-provided-analytics">FFN-Provided Analytics</h3>
+<h4 id="1-monthly-returns-analysis">1. Monthly Returns Analysis</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">monthly_returns</span> <span class="o">=</span> <span class="n">ffn</span><span class="o">.</span><span class="n">monthly_returns</span><span class="p">(</span><span class="n">price_data</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Output</strong>: Year/month breakdown tables showing periodic performance patterns, seasonality analysis.</p>
+<h4 id="2-drawdown-analysis">2. Drawdown Analysis</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">drawdown_series</span> <span class="o">=</span> <span class="n">ffn</span><span class="o">.</span><span class="n">to_drawdown_series</span><span class="p">(</span><span class="n">price_data</span><span class="p">)</span>
+<span class="n">drawdown_details</span> <span class="o">=</span> <span class="n">ffn</span><span class="o">.</span><span class="n">drawdown_details</span><span class="p">(</span><span class="n">drawdown_series</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Analysis Provided</strong>:
+- Maximum drawdown periods (peak-to-trough decline)
+- Drawdown duration and recovery periods
+- Peak and trough identification</p>
+<h4 id="3-summary-statistics">3. Summary Statistics</h4>
+<p>Additional metrics beyond the core 4, including volatility measures, rolling statistics, and performance attribution.</p>
+<h3 id="why-ffn-for-supporting-analytics">Why FFN for Supporting Analytics?</h3>
+<ul>
+<li><strong>Proven Library</strong>: Extensively tested in quantitative finance</li>
+<li><strong>Consistency</strong>: Uses same preprocessed data as custom calculations</li>
+<li><strong>Comprehensive</strong>: Provides analytics that would take months to implement correctly</li>
+<li><strong>Maintenance</strong>: Focus custom development on unique requirements only</li>
+</ul>
+<hr />
+<h2 id="csv-export-capabilities-spr-advantage">📁 CSV Export Capabilities (SPR Advantage)</h2>
+<h3 id="ready-to-use-data-files">Ready-to-Use Data Files</h3>
+<p>SPR automatically generates two critical CSV files alongside the HTML report:</p>
+<h4 id="1-processed-price-data-csv">1. Processed Price Data CSV</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">Filename</span><span class="o">:</span><span class="w"> </span><span class="n">report_AAPL</span><span class="o">-</span><span class="n">MSFT</span><span class="o">-</span><span class="n">GOOG_timestamp_processed_price_data</span><span class="o">.</span><span class="na">csv</span>
+</code></pre></div>
+
+<p><strong>Content:</strong> Clean, investment-ready price data with:
+- ✅ <strong>Date alignment</strong> across all symbols (conservative multi-symbol approach)
+- ✅ <strong>Forward filling</strong> applied (up to 5-day gaps)
+- ✅ <strong>Data quality filters</strong> (removed zeros, negatives, duplicates)
+- ✅ <strong>Consistent date range</strong> (all symbols have data for same period)</p>
+<p><strong>Use Cases:</strong>
+- <strong>Excel analysis</strong>: Drop 10+ symbols into spreadsheet for custom calculations
+- <strong>External validations</strong>: Compare with other data sources
+- <strong>Independent research</strong>: Use clean data without repeating preprocessing
+- <strong>Quick data pulls</strong>: Get multiple symbol prices without yfinance setup</p>
+<h4 id="2-cumulative-returns-csv">2. Cumulative Returns CSV</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">Filename</span><span class="o">:</span><span class="w"> </span><span class="n">report_AAPL</span><span class="o">-</span><span class="n">MSFT</span><span class="o">-</span><span class="n">GOOG_timestamp_cumulative_returns</span><span class="o">.</span><span class="na">csv</span>
+</code></pre></div>
+
+<p><strong>Content:</strong> Daily cumulative return progression showing:
+- Performance evolution over time
+- Relative performance comparison across symbols<br />
+- Ready for charting and trend analysis</p>
+<p><strong>Use Cases:</strong>
+- <strong>Custom visualizations</strong>: Create your own charts in Excel/Python
+- <strong>Performance attribution</strong>: Analyze contribution periods
+- <strong>Validation checks</strong>: Verify report calculations independently
+- <strong>Academic research</strong>: Clean returns data for statistical analysis</p>
+<h3 id="practical-value">Practical Value</h3>
+<p><strong>Scenario:</strong> You need clean price data for 8 tech stocks for Excel analysis.
+- <strong>Traditional approach:</strong> Download from multiple sources, handle missing data, align dates, forward fill gaps
+- <strong>SPR approach:</strong> Run one analysis, get ready-to-use CSV with all 8 stocks perfectly aligned</p>
+<p><strong>Time savings:</strong> Hours of data cleaning reduced to minutes</p>
+<hr />
+<h2 id="practical-validation-walkthrough">🔍 Practical Validation Walkthrough</h2>
+<h3 id="test-case-gspc-nsei-portfolio-june-2015-may-2025">Test Case: ^GSPC &amp; ^NSEI Portfolio (June 2015 - May 2025)</h3>
+<h4 id="step-1-data-processing-verification">Step 1: Data Processing Verification</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">SPR</span><span class="w"> </span><span class="n">Processing</span><span class="w"> </span><span class="n">Log</span><span class="p">:</span>
+<span class="o">-</span><span class="w"> </span><span class="n">Downloaded</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="mi">580</span><span class="w"> </span><span class="n">daily</span><span class="w"> </span><span class="n">observations</span>
+<span class="o">-</span><span class="w"> </span><span class="n">After</span><span class="w"> </span><span class="n">cleaning</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="mi">578</span><span class="w"> </span><span class="n">observations</span><span class="w">  </span>
+<span class="o">-</span><span class="w"> </span><span class="n">Date</span><span class="w"> </span><span class="nb">range</span><span class="p">:</span><span class="w"> </span><span class="mi">2015</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">09</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">30</span>
+<span class="o">-</span><span class="w"> </span><span class="n">Symbols</span><span class="w"> </span><span class="n">aligned</span><span class="p">:</span><span class="w"> </span><span class="n">Both</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="n">meaningful</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">same</span><span class="w"> </span><span class="n">date</span>
+</code></pre></div>
+
+<h4 id="step-2-core-metrics-comparison">Step 2: Core Metrics Comparison</h4>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>SPR Result</th>
+<th>QuantStats-Lumi</th>
+<th>Difference</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total Return</strong></td>
+<td>184.20%</td>
+<td>184.20%</td>
+<td>0.00%</td>
+<td>✅ Perfect</td>
+</tr>
+<tr>
+<td><strong>CAGR</strong></td>
+<td>11.04%</td>
+<td>11.04%</td>
+<td>0.00%</td>
+<td>✅ Perfect</td>
+</tr>
+<tr>
+<td><strong>Sharpe Ratio</strong></td>
+<td>0.785</td>
+<td>0.81</td>
+<td>-3.1%</td>
+<td>✅ Acceptable</td>
+</tr>
+<tr>
+<td><strong>Sortino Ratio</strong></td>
+<td>1.099</td>
+<td>1.14</td>
+<td>-3.6%</td>
+<td>✅ Acceptable</td>
+</tr>
+</tbody>
+</table>
+<h4 id="step-3-understanding-acceptable-differences">Step 3: Understanding Acceptable Differences</h4>
+<p><strong>Sharpe Ratio Analysis (^GSPC Example):</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="nv">SPR</span><span class="w"> </span><span class="nv">Debug</span><span class="w"> </span><span class="nv">Information</span>:
+<span class="o">-</span><span class="w"> </span><span class="nv">Total</span><span class="w"> </span><span class="nv">sample</span><span class="w"> </span><span class="nv">size</span>:<span class="w"> </span><span class="mi">2</span>,<span class="mi">580</span>
+<span class="o">-</span><span class="w"> </span><span class="nv">Non</span><span class="o">-</span><span class="nv">zero</span><span class="w"> </span><span class="nv">returns</span>:<span class="w"> </span><span class="mi">2</span>,<span class="mi">508</span>
+<span class="o">-</span><span class="w"> </span><span class="nv">Time</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">Market</span>:<span class="w"> </span><span class="mi">97</span>.<span class="mi">2</span><span class="o">%</span>
+<span class="o">-</span><span class="w"> </span><span class="nv">Mean</span><span class="w"> </span><span class="k">return</span>:<span class="w"> </span><span class="mi">0</span>.<span class="mi">00047080</span>
+<span class="o">-</span><span class="w"> </span><span class="nv">Std</span><span class="w"> </span><span class="nv">deviation</span>:<span class="w"> </span><span class="mi">0</span>.<span class="mi">01146096</span>
+<span class="o">-</span><span class="w"> </span><span class="nv">Final</span><span class="w"> </span><span class="nv">Sharpe</span>:<span class="w"> </span><span class="mi">0</span>.<span class="mi">784807</span>
+</code></pre></div>
+
+<p><strong>Difference Explanation</strong>: The 3% variance likely stems from QuantStats using slightly different data quality filters, resulting in 98% vs 97.2% &ldquo;time in market&rdquo; calculation.</p>
+<h4 id="step-4-validation-conclusion">Step 4: Validation Conclusion</h4>
+<ul>
+<li><strong>Core return metrics</strong>: Perfect mathematical agreement confirms correct implementation</li>
+<li><strong>Risk metrics</strong>: Minor differences within acceptable tolerance for financial analysis</li>
+<li><strong>Overall assessment</strong>: Both methodologies reliable for practical use</li>
+</ul>
+<hr />
+<h2 id="when-to-use-spr-vs-qpulse">🎯 When to Use SPR vs QPulse</h2>
+<h3 id="choose-qpulse-when">Choose QPulse When:</h3>
+<p><strong>✅ Perfect For:</strong>
+- <strong>2-symbol analysis</strong> (strategy vs benchmark comparison)
+- <strong>Comprehensive built-in analytics</strong> (15+ charts, 50+ metrics)
+- <strong>Minimal customization needs</strong>
+- <strong>Tried and tested analysis</strong> (maintained by Lumiwealth team of data scientists and engineers)
+- <strong>Quick, standard portfolio reports</strong></p>
+<p><strong>📊 Advantages:</strong>
+- Extensive pre-built visualizations
+- Comprehensive metrics library
+- Minimal setup required
+- Well-documented and actively maintained</p>
+<h3 id="choose-spr-when">Choose SPR When:</h3>
+<p><strong>✅ Perfect For:</strong>
+- <strong>Multiple symbols analysis</strong> (portfolio with 3+ holdings)
+- <strong>Interactive visualizations</strong> (Plotly-based charts)
+- <strong>Clean data extraction</strong> (processed price data for 10+ symbols ready for Excel)
+- <strong>Independent analysis &amp; validation</strong> (CSV exports for custom calculations)
+- <strong>Custom metric requirements</strong> (future rolling metrics, specialized calculations)
+- <strong>Development flexibility</strong> (ability to modify calculations without affecting QuantStats)
+- <strong>Dual validation approach</strong> (automatic cross-verification with QuantStats)</p>
+<p><strong>🚀 Advantages:</strong>
+- No symbol limit restrictions
+- Interactive cumulative returns charts
+- <strong>Ready-to-use CSV exports</strong>: Clean, processed price data and cumulative returns for Excel analysis
+- Foundation for custom metric development
+- Transparent calculation methodology</p>
+<h3 id="recommended-workflow">Recommended Workflow:</h3>
+<h4 id="for-standard-analysis-2-symbols">For Standard Analysis (2 symbols):</h4>
+<ol>
+<li><strong>Primary</strong>: Use QPulse for comprehensive analysis</li>
+<li><strong>Validation</strong>: Run SPR for automatic cross-verification</li>
+<li><strong>Custom needs</strong>: Switch to SPR if you need modifications</li>
+</ol>
+<h4 id="for-portfolio-analysis-3-symbols">For Portfolio Analysis (3+ symbols):</h4>
+<ol>
+<li><strong>Primary</strong>: Use SPR (only option for multiple symbols)</li>
+<li><strong>Validation</strong>: Use individual QPulse runs for key symbol pairs</li>
+<li><strong>Excel Analysis</strong>: Use SPR&rsquo;s clean CSV exports for custom calculations and validations</li>
+</ol>
+<h4 id="for-data-extraction-any-number-of-symbols">For Data Extraction (any number of symbols):</h4>
+<ol>
+<li><strong>Quick Data Pull</strong>: Use SPR to get clean, aligned price data for multiple symbols</li>
+<li><strong>Export to Excel</strong>: Ready-to-use CSV files eliminate data preprocessing</li>
+<li><strong>Custom Analysis</strong>: Build your own calculations on clean foundation</li>
+</ol>
+<h4 id="for-research-development">For Research &amp; Development:</h4>
+<ol>
+<li><strong>Testing</strong>: Use SPR for implementing new metrics</li>
+<li><strong>Validation</strong>: Compare against QPulse for proven calculations</li>
+<li><strong>Production</strong>: Deploy SPR for final analysis once validated</li>
+</ol>
+<hr />
+<h2 id="technical-implementation-summary">📚 Technical Implementation Summary</h2>
+<h3 id="mathematical-validation-status">Mathematical Validation Status</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Implementation</th>
+<th>Validation Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total Return</strong></td>
+<td>Custom QuantStats-compatible</td>
+<td>✅ 100% Match</td>
+<td>Perfect mathematical agreement</td>
+</tr>
+<tr>
+<td><strong>CAGR</strong></td>
+<td>Custom QuantStats-compatible</td>
+<td>✅ 100% Match</td>
+<td>Identical fractional year calculation</td>
+</tr>
+<tr>
+<td><strong>Sharpe Ratio</strong></td>
+<td>Custom QuantStats-compatible</td>
+<td>✅ 97%+ Match</td>
+<td>Minor data filtering differences</td>
+</tr>
+<tr>
+<td><strong>Sortino Ratio</strong></td>
+<td>Custom QuantStats-compatible</td>
+<td>✅ 97%+ Match</td>
+<td>Same methodology, slight filtering variance</td>
+</tr>
+<tr>
+<td><strong>Monthly Returns</strong></td>
+<td>FFN library</td>
+<td>✅ Verified</td>
+<td>Identical FFN implementation</td>
+</tr>
+<tr>
+<td><strong>Drawdown Analysis</strong></td>
+<td>FFN library</td>
+<td>✅ Verified</td>
+<td>Same peak-to-trough methodology</td>
+</tr>
+</tbody>
+</table>
+<h3 id="data-processing-comparison">Data Processing Comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>QuantStats-Lumi</th>
+<th>SPR</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data Source</strong></td>
+<td>Yahoo Finance</td>
+<td>Yahoo Finance</td>
+<td>Identical</td>
+</tr>
+<tr>
+<td><strong>Symbol Limit</strong></td>
+<td>2 symbols max</td>
+<td>Unlimited</td>
+<td>SPR advantage for portfolios</td>
+</tr>
+<tr>
+<td><strong>Date Matching</strong></td>
+<td>Per-pair basis</td>
+<td>Multi-symbol alignment</td>
+<td>Conservative SPR approach</td>
+</tr>
+<tr>
+<td><strong>Missing Data</strong></td>
+<td>Library handling</td>
+<td>Forward fill (5-day limit)</td>
+<td>Explicit SPR control</td>
+</tr>
+<tr>
+<td><strong>Quality Filters</strong></td>
+<td>Internal library logic</td>
+<td>Transparent implementation</td>
+<td>SPR auditability</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="conclusion">🏁 Conclusion</h2>
+<h3 id="key-takeaways-for-financial-analysts">Key Takeaways for Financial Analysts</h3>
+<ol>
+<li><strong>Both methodologies are reliable</strong> for professional financial analysis</li>
+<li><strong>Perfect agreement on core return metrics</strong> validates mathematical correctness</li>
+<li><strong>Minor risk metric differences</strong> reflect different data quality approaches, not calculation errors</li>
+<li><strong>Choose based on specific needs</strong>: QPulse for comprehensive 2-symbol analysis, SPR for multi-symbol portfolios and customization</li>
+</ol>
+<h3 id="confidence-level">Confidence Level</h3>
+<ul>
+<li><strong>Core Metrics</strong>: 100% confidence in both approaches</li>
+<li><strong>Risk Metrics</strong>: 97%+ accuracy provides acceptable tolerance for practical analysis</li>
+<li><strong>Supporting Analytics</strong>: FFN integration ensures consistent methodology</li>
+</ul>
+<h3 id="recommendation">Recommendation</h3>
+<p>Both tools serve complementary roles in a robust analysis framework. The automatic validation provided by running both tools enhances confidence in results and provides protection against potential library changes or data quality issues.</p>
+<p><strong>For most analysts</strong>: Start with your primary tool based on symbol count needs, then use the other for validation when making important investment decisions. </p>
+        
+                 <!-- Last Updated Info -->
+         <div style="
+             font-size: 0.9em;
+             color: #7f8c8d;
+             text-align: right;
+             margin-top: 30px;
+             padding-top: 20px;
+             border-top: 1px solid #ecf0f1;
+         ">
+             <p><strong>Last Updated:</strong> 2026-01-25 09:32:54 UTC</p>
+         </div>
+        
+                 <!-- Note Disclaimer Box -->
+         <div style="
+             background: rgba(255,248,220,0.8);
+             border: 1px solid #fbbf24;
+             border-radius: 6px;
+             padding: 12px;
+             margin: 24px 0 16px 0;
+             font-size: 13px;
+             color: #92400e;
+             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+             line-height: 1.5;
+         ">
+             <strong style="font-weight: bold !important;">Note:</strong> This documentation is for informational purposes only and should not be considered as investment advice. The methodologies described here compare QuantStats-Lumi and Security Performance Report (SPR) implementations. SPR uses custom calculations as well as FFN package for some of the metrics. While some of the calculations metrics have been validated for consistency, users are encouraged to refer to 
+             <a href="https://github.com/amararun/shared-fastapi-mcp-ffn" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: none; font-weight: 500;">GitHub Repo for SPR</a>, the 
+             <a href="https://github.com/pmorissette/ffn" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: none; font-weight: 500;">official documentation for FFN</a> and 
+             <a href="https://github.com/Lumiwealth/quantstats_lumi" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: none; font-weight: 500;">QuantStats documentation</a>
+             for full methodology details. Always validate outputs and interpret results in light of your specific analytical objectives.
+         </div>
+        
+        <!-- Footer (same as FFN reports) -->
+        <footer style="
+            background: rgba(255,255,255,0.5);
+            border-top: 1px solid #e0e7ff;
+            padding: 8px 0;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #1e1b4b;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: normal;
+        ">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                    <div style="font-size: 12px; color: rgba(30, 27, 75, 0.7); font-weight: normal;">
+                        Amar Harolikar <span style="margin: 0 6px; color: #c7d2fe;">•</span>
+                        Specialist - Decision Sciences & Applied Generative AI <span style="margin: 0 6px; color: #c7d2fe;">•</span>
+                        <a href="mailto:amar@harolikar.com" style="color: #4338ca; text-decoration: none; font-weight: normal;">amar@harolikar.com</a>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px; font-size: 12px;">
+                        <a href="https://www.linkedin.com/in/amarharolikar" target="_blank" rel="noopener noreferrer"
+                           style="color: #4338ca; text-decoration: none; font-weight: normal;">
+                            LinkedIn
+                        </a>
+                        <a href="https://github.com/amararun" target="_blank" rel="noopener noreferrer"
+                           style="color: #4338ca; text-decoration: none; font-weight: normal;">
+                            GitHub
+                        </a>
+                        <a href="https://app.tigzig.com" target="_blank" rel="noopener noreferrer"
+                           style="color: #4338ca; text-decoration: none; font-weight: normal;">
+                            app.tigzig.com
+                        </a>
+                        <a href="https://tigzig.com" target="_blank" rel="noopener noreferrer"
+                           style="color: #4338ca; text-decoration: none; font-weight: normal;">
+                            tigzig.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+    
+    <script>
+        // Add some basic interactivity for tables
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click-to-highlight for code blocks
+            const codeBlocks = document.querySelectorAll('pre');
+            codeBlocks.forEach(block => {
+                block.addEventListener('click', function() {
+                    if (window.getSelection) {
+                        const selection = window.getSelection();
+                        const range = document.createRange();
+                        range.selectNodeContents(this);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                });
+                block.style.cursor = 'pointer';
+                block.title = 'Click to select all code';
+            });
+        });
+    </script>
+</body>
+</html>

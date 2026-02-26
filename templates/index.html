@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Performance Report </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        /* Custom Tailwind Configuration */
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            950: '#1e1b4b',
+                            900: '#312e81',
+                            800: '#3730a3',
+                            700: '#4338ca',
+                            200: '#c7d2fe',
+                            100: '#e0e7ff',
+                            50: '#eef2ff',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom Gradient Header */
+        .header-gradient {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        }
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        /* Compact Layout Styles */
+        .compact-form {
+            margin-bottom: 0.5rem;
+        }
+        .compact-form .form-row {
+            margin-bottom: 0.75rem;
+        }
+        .compact-section {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+
+    <!-- Statcounter Code -->
+    <script type="text/javascript">
+        var sc_project = 13047808;
+        var sc_invisible = 1;
+        var sc_security = "b480b311";
+    </script>
+    <script type="text/javascript" src="https://www.statcounter.com/counter/counter.js" async></script>
+    <noscript>
+        <div class="statcounter">
+            <a title="web stats" href="https://statcounter.com/" target="_blank">
+                <img class="statcounter" src="https://c.statcounter.com/13047808/0/b480b311/1/" alt="web stats" referrerPolicy="no-referrer-when-downgrade" />
+            </a>
+        </div>
+    </noscript>
+    <!-- End of Statcounter Code -->
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+    <!-- Professional Header with Gradient Background -->
+    <header class="header-gradient text-white shadow-lg border-b border-white/5">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 py-2 px-4">
+            <!-- Title and subtitle section -->
+            <div class="flex flex-col md:flex-row items-center gap-1 md:gap-4 w-full md:w-auto">
+                <h1 class="text-lg md:text-xl font-semibold whitespace-nowrap tracking-tight">
+                    Security Performance Report
+                </h1>
+                <div class="hidden md:block h-5 w-px bg-indigo-300/20"></div>
+                <span class="text-sm md:text-base text-indigo-100 font-medium tracking-tight">
+                    Portfolio Analytics for Quants
+                </span>
+            </div>
+
+            <!-- Divider for mobile -->
+            <div class="w-full h-px md:hidden bg-indigo-300/20 my-2"></div>
+
+            <!-- GitHub Links -->
+            <div class="flex items-center gap-3">
+                <a href="https://github.com/amararun/shared-fastapi-mcp-ffn" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded-md border border-gray-500 text-sm">
+                    <i class="fab fa-github mr-2"></i>
+                    GitHub Repo
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="max-w-7xl mx-auto px-4 pt-2 pb-1 flex-grow">
+        <!-- Error Message (if any) -->
+        {% if error %}
+        <div class="mb-2 p-2 rounded-md bg-red-50 text-red-700 border border-red-200 text-sm">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Success Message (if any) -->
+        {% if success %}
+        <div class="mb-2 p-2 rounded-md bg-green-50 text-green-700 border border-green-200 text-sm">
+            {{ success }}
+        </div>
+        {% endif %}
+
+        <!-- Dynamic Message Area -->
+        <div id="messageArea"></div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-2">
+            <h2 class="text-xl font-semibold mb-2">Generate Security Performance Report</h2>
+            <p class="text-gray-600 mb-3 text-sm">Enter stock symbols to generate a comprehensive Security Performance Report using custom calculations and FFN package.</p>
+            
+            <form class="space-y-4 compact-form" id="analyzeForm">
+                <!-- Symbols and Rate Row -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Stock Symbols Input -->
+                    <div class="space-y-1">
+                        <label for="symbols" class="block text-sm font-medium text-gray-700">Stock Symbols</label>
+                        <input type="text" id="symbols" name="symbols" placeholder="AAPL,MSFT,GOOG" required
+                            class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <p class="text-xs text-gray-500 mt-0.5">Comma-separated symbols (e.g., AAPL,MSFT,GOOG)</p>
+                    </div>
+
+                    <!-- Risk-Free Rate Input -->
+                    <div class="space-y-1">
+                        <label for="risk_free_rate" class="block text-sm font-medium text-gray-700">Risk-Free Rate (%)</label>
+                        <div class="relative">
+                            <input type="number" id="risk_free_rate" name="risk_free_rate" value="0" step="0.01" min="0" max="100"
+                                class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pr-6">
+                            <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                <span class="text-gray-500 text-sm">%</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">Annual rate for Sharpe ratio calculations</p>
+                    </div>
+                </div>
+
+                <!-- Date Range Row -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Start Date -->
+                    <div class="space-y-1">
+                        <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                        <input type="date" id="start_date" name="start_date" required
+                            class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="space-y-1">
+                        <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                        <input type="date" id="end_date" name="end_date" required
+                            class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+                
+                <div class="pt-1 flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <button type="submit" id="submitBtn"
+                            class="px-4 py-1.5 text-sm bg-indigo-600 text-white font-medium rounded-md shadow-sm hover:bg-indigo-700 transition-colors">
+                            Generate Analysis
+                        </button>
+                        <div class="spinner" id="loadingSpinner"></div>
+                    </div>
+                    <!-- Analysis Report Section (Inline) -->
+                    {% if report_generated %}
+                    <div id="reportSection" class="flex items-center gap-2">
+                        <a href="{{ report_path }}" target="_blank"
+                           class="inline-flex items-center px-3 py-1.5 text-sm bg-green-600 text-white font-medium rounded-md shadow-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-chart-line mr-1.5"></i>
+                            HTML Report
+                        </a>
+                        <span class="text-xs text-gray-500">(Opens in a new window)</span>
+                    </div>
+                    {% else %}
+                    <div id="reportSection" class="flex items-center gap-2" style="display: none;">
+                        <a id="htmlReportBtn" href="#" target="_blank"
+                           class="inline-flex items-center px-2 py-1.5 text-xs bg-green-600 text-white font-medium rounded-md shadow-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-chart-line mr-1"></i>
+                            HTML Report
+                        </a>
+                        <a id="priceDataBtn" href="#" download
+                           class="inline-flex items-center px-2 py-1.5 text-xs bg-green-600 text-white font-medium rounded-md shadow-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-download mr-1"></i>
+                            Price Data
+                        </a>
+                        <a id="cumulativeReturnsBtn" href="#" download
+                           class="inline-flex items-center px-2 py-1.5 text-xs bg-green-600 text-white font-medium rounded-md shadow-sm hover:bg-green-700 transition-colors">
+                            <i class="fas fa-download mr-1"></i>
+                            Cumulative Returns Data
+                        </a>
+                        <span class="text-xs text-gray-500">(Report opens in new window, data downloads as CSV)</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <!-- Note/Disclaimer Section -->
+        <div class="bg-amber-50 rounded-xl shadow-sm border border-amber-200 p-4 mb-2">
+            <p class="text-amber-800 text-xs leading-relaxed">
+                <strong class="font-bold">Note:</strong> This report is for informational purposes only and should not be considered as investment advice. Metrics in this report are generated using Security Performance Report (SPR) implementations which use custom calculations as well as 
+                <a href="https://github.com/pmorissette/ffn" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-800 underline font-medium">FFN package</a> for some of the metrics. 
+                While some of the calculations metrics have been validated for consistency, users are encouraged to refer to 
+                <a href="https://github.com/amararun/shared-fastapi-mcp-ffn" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-800 underline font-medium">GitHub Repo for SPR</a>, the 
+                <a href="https://github.com/pmorissette/ffn" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-800 underline font-medium">official documentation for FFN</a> and 
+                <a href="https://github.com/Lumiwealth/quantstats_lumi" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-800 underline font-medium">QuantStats documentation</a> 
+                for full methodology details. For a methodology comparison between QuantStats and Security Performance Review implementations, users are advised to refer to this 
+                <a href="https://ffn.hosting.tigzig.com/static/docs/SPR_QS_METHODOLOGY.html" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-800 underline font-medium">methodology reference document</a>. 
+                Always validate outputs and interpret results in light of your specific analytical objectives.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Set default dates and handle form submission
+        window.onload = function() {
+            console.log('Window loaded, setting up form...'); // Debug log
+            
+            // Get today's date
+            const today = new Date();
+            
+            // Calculate 5 years ago
+            const fiveYearsAgo = new Date();
+            fiveYearsAgo.setFullYear(today.getFullYear() - 5);
+            
+            // Format dates for input fields
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            // Set default dates
+            document.getElementById('start_date').value = formatDate(fiveYearsAgo);
+            document.getElementById('end_date').value = formatDate(today);
+            
+            // Set max date to today for both inputs
+            const maxDate = formatDate(today);
+            document.getElementById('start_date').max = maxDate;
+            document.getElementById('end_date').max = maxDate;
+            
+            // Add event listener to ensure start_date is not after end_date
+            document.getElementById('start_date').addEventListener('change', function() {
+                const endDate = document.getElementById('end_date');
+                if (this.value > endDate.value) {
+                    endDate.value = this.value;
+                }
+            });
+            
+            // Add event listener to ensure end_date is not before start_date
+            document.getElementById('end_date').addEventListener('change', function() {
+                const startDate = document.getElementById('start_date');
+                if (this.value < startDate.value) {
+                    startDate.value = this.value;
+                }
+            });
+
+            // Handle form submission
+            const form = document.getElementById('analyzeForm');
+            if (form) {
+                console.log('Form found, adding event listener...'); // Debug log
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default form submission
+                    
+                    console.log('Form submitted'); // Debug log
+                    
+                    // Get elements
+                    const submitBtn = document.getElementById('submitBtn');
+                    const loadingSpinner = document.getElementById('loadingSpinner');
+                    const reportSection = document.getElementById('reportSection');
+                    const htmlReportBtn = document.getElementById('htmlReportBtn');
+                    const priceDataBtn = document.getElementById('priceDataBtn');
+                    const cumulativeReturnsBtn = document.getElementById('cumulativeReturnsBtn');
+                    const messageArea = document.getElementById('messageArea');
+                    
+                    // Check if elements exist
+                    console.log('Elements found:', {
+                        submitBtn: !!submitBtn,
+                        loadingSpinner: !!loadingSpinner,
+                        reportSection: !!reportSection,
+                        htmlReportBtn: !!htmlReportBtn,
+                        priceDataBtn: !!priceDataBtn,
+                        cumulativeReturnsBtn: !!cumulativeReturnsBtn,
+                        messageArea: !!messageArea
+                    });
+                    
+                    // Show loading state
+                    if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
+                    if (submitBtn) {
+                        submitBtn.classList.add('loading');
+                        submitBtn.textContent = 'Generating...';
+                    }
+                    
+                    // Hide existing report and clear messages
+                    if (reportSection) reportSection.style.display = 'none';
+                    if (messageArea) messageArea.innerHTML = '';
+                    
+                    // Get form data
+                    const formData = new FormData(this);
+                    
+                    console.log('Calling API...'); // Debug log
+                    
+                    // Make API call to the new endpoint
+                    fetch('/api/analyze', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => {
+                            console.log('API Response status:', response.status); // Debug log
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('API Response data:', data); // Debug log
+                            if (data.success && data.html_report_ffn_url) {
+                                // Show success message
+                                if (messageArea) {
+                                    messageArea.innerHTML = `
+                                        <div class="mb-2 p-2 rounded-md bg-green-50 text-green-700 border border-green-200 text-sm">
+                                            ${data.message}
+                                        </div>
+                                    `;
+                                }
+                                
+                                // Show report buttons
+                                if (htmlReportBtn) htmlReportBtn.href = data.html_report_ffn_url;
+                                if (priceDataBtn && data.input_price_data_csv_url) {
+                                    priceDataBtn.href = data.input_price_data_csv_url;
+                                } else if (priceDataBtn) {
+                                    priceDataBtn.style.display = 'none';
+                                }
+                                if (cumulativeReturnsBtn && data.cumulative_returns_csv_url) {
+                                    cumulativeReturnsBtn.href = data.cumulative_returns_csv_url;
+                                } else if (cumulativeReturnsBtn) {
+                                    cumulativeReturnsBtn.style.display = 'none';
+                                }
+                                if (reportSection) reportSection.style.display = 'flex';
+                            } else if (data.error) {
+                                // Show error message
+                                if (messageArea) {
+                                    messageArea.innerHTML = `
+                                        <div class="mb-2 p-2 rounded-md bg-red-50 text-red-700 border border-red-200 text-sm">
+                                            ${data.error}
+                                        </div>
+                                    `;
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            if (messageArea) {
+                                messageArea.innerHTML = `
+                                    <div class="mb-2 p-2 rounded-md bg-red-50 text-red-700 border border-red-200 text-sm">
+                                        Error generating analysis. Please try again.
+                                    </div>
+                                `;
+                            }
+                        })
+                        .finally(() => {
+                            // Reset loading state
+                            if (loadingSpinner) loadingSpinner.style.display = 'none';
+                            if (submitBtn) {
+                                submitBtn.classList.remove('loading');
+                                submitBtn.textContent = 'Generate Analysis';
+                            }
+                        });
+                });
+            } else {
+                console.error('Form not found!'); // Debug log
+            }
+        }
+    </script>
+
+    <!-- Professional Footer -->
+    <footer class="bg-white/50 border-t border-indigo-100 py-2 mt-2 text-xs text-indigo-950/70">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-1">
+                <div class="text-xs text-indigo-950/70 text-center md:text-left">
+                    Amar Harolikar <span class="mx-1.5 text-indigo-300">•</span> 
+                    Specialist - Decision Sciences & Applied Generative AI
+                </div>
+                <div class="flex items-center gap-4 text-xs">
+                    <a href="https://www.linkedin.com/in/amarharolikar" target="_blank" rel="noopener noreferrer"
+                        class="text-indigo-600 hover:text-indigo-700 hover:underline">
+                        <i class="fab fa-linkedin mr-1"></i>LinkedIn
+                    </a>
+                    <a href="https://github.com/amararun" target="_blank" rel="noopener noreferrer"
+                        class="text-indigo-600 hover:text-indigo-700 hover:underline">
+                        <i class="fab fa-github mr-1"></i>GitHub
+                    </a>
+                    <a href="https://app.tigzig.com" target="_blank" rel="noopener noreferrer"
+                        class="text-indigo-600 hover:text-indigo-700 hover:underline">
+                        app.tigzig.com
+                    </a>
+                    <a href="https://tigzig.com" target="_blank" rel="noopener noreferrer"
+                        class="text-indigo-600 hover:text-indigo-700 hover:underline">
+                        tigzig.com
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 
