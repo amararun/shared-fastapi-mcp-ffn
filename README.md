@@ -63,7 +63,7 @@ This application has been hardened with the following security measures:
 
 ## 📊 QuantStats versus SPR
 
-Validations have been carried out for custom calculations against established methodologies. The detailed report is available at **[SPR vs QuantStats Methodology Comparison](https://ffn.hosting.tigzig.com/static/docs/SPR_QS_METHODOLOGY.html)**.
+Validations have been carried out for custom calculations against established methodologies. The detailed report is available at **[SPR vs QuantStats Methodology Comparison](https://ffn.tigzig.com/static/docs/SPR_QS_METHODOLOGY.html)**.
 
 This document provides a comparison between two portfolio analysis methodologies:
 
