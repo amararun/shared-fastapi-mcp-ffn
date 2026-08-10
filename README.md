@@ -1,3 +1,5 @@
+⚠️ **This repo is archived and no longer maintained.** It stays up as reference code for the build guides. No updates, including security updates, so review before you use any of it anywhere serious. The live apps run on newer, hardened versions of this code.
+
 # Security Performance Report FastAPI Server
 
 A professional FastAPI-based portfolio analysis application that uses a combination of custom calculation methodologies as well as metrics from the **[FFN (Financial Functions)](https://github.com/pmorissette/ffn)** package. This application provides comprehensive portfolio analytics with beautiful HTML reports, CSV data exports, and MCP (Model Context Protocol) 
